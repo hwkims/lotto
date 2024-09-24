@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>로또 번호 뽑기</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: #f5f5f5;
+      }
+
+      #gameCanvas {
+        border: 1px solid #ccc;
+        border-radius: 50%; /* make the canvas a circle */
+      }
+
+      #lottery-numbers {
+        font-size: 24px;
+        font-weight: bold;
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+      }
+
+      #retry-button {
+        background-color: #4caf50;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      #retry-button:hover {
+        background-color: #3e8e41;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="gameCanvas" width="800" height="800"></canvas>
+    <div id="lottery-numbers"></div>
+    <button id="retry-button">Retry</button>
+    <script>
+      // canvas 요소 가져오기
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      // Get a reference to the retry button
+const retryButton = document.getElementById("retry-button");
+      retryButton.addEventListener("click", () => {
+        // Reset the game state
+        circles = [];
+        lotteryNumbers = [];
+        intervalId = null; // Clear the interval ID
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+        // Re-create the circles
+        for (let i = 1; i <= 45; i++) {
+          circles.push(
+            new Circle(
+              Math.random() * canvas.width,
+              Math.random() * canvas.height,
+              i
+            )
+          );
+        }
+
+        // Restart the game loop
+        intervalId = setInterval(gameLoop, 16);
+      });
+      // 동글한 원 객체
+      class Circle {
+        constructor(x, y, number) {
+          this.x = x;
+          this.y = y;
+          this.radius = 20;
+          this.color = `#${Math.floor(Math.random() * 16777215).toString(16)}`;
+          this.speedX = Math.random() * 5 - 5; // reduced speed
+          this.speedY = Math.random() * 5 - 5; // reduced speed
+          this.number = number;
+        }
+
+        draw() {
+          if (lotteryNumbers.includes(this.number)) {
+            return; // don't draw if the ball has exited
+          }
+
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.font = "24px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = "#fff";
+          ctx.fillText(this.number, this.x, this.y);
+          // Reset shadow properties
+          ctx.shadowColor = "#000";
+          ctx.shadowBlur = 5;
+        }
+
+        update() {
+          this.x += this.speedX;
+          this.y += this.speedY;
+
+          // 벽 충돌 처리
+          const distanceFromCenter = Math.sqrt(
+            (this.x - canvas.width / 2) ** 2 + (this.y - canvas.height / 2) ** 2
+          );
+          if (distanceFromCenter + this.radius > canvas.width / 2) {
+            const angle = Math.atan2(
+              this.y - canvas.height / 2,
+              this.x - canvas.width / 2
+            );
+            this.speedX = -Math.cos(angle) * 5;
+            this.speedY = -Math.sin(angle) * 5;
+          }
+        }
+      }
+
+      // 로또 번호 뽑기
+      let circles = [];
+      let lotteryNumbers = [];
+
+      // 45개의 공 생성
+      for (let i = 1; i <= 45; i++) {
+        circles.push(
+          new Circle(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            i
+          )
+        );
+      }
+
+      //出口 생성
+      const exitX = canvas.width / 2;
+      const exitY = canvas.height / 2;
+      const exitRadius = 50;
+
+      // Draw the exit circle
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.beginPath();
+      ctx.arc(exitX, exitY, exitRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 게임 루프
+      function gameLoop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the exit circle again
+        ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.beginPath();
+        ctx.arc(exitX, exitY, exitRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        for (let i = 0; i < circles.length; i++) {
+          circles[i].update();
+          circles[i].draw();
+
+          //出口 충돌 처리
+          const dx = circles[i].x - exitX;
+          const dy = circles[i].y - exitY;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < circles[i].radius + exitRadius) {
+            lotteryNumbers.push(circles[i].number);
+            circles.splice(i, 1);
+            i--;
+          }
+        }
+
+        // 6개의 공이 들어가면 멈춘다
+        if (lotteryNumbers.length >= 6) {
+          clearInterval(intervalId);
+        }
+
+        // Update the lottery numbers display
+        // Update the lottery numbers display
+        const lotteryNumbersElement =
+          document.getElementById("lottery-numbers");
+        lotteryNumbersElement.textContent = `Drawn numbers: ${lotteryNumbers
+          .slice(0, 6)
+          .join(", ")}`;
+        requestAnimationFrame(gameLoop);
+      }
+      let intervalId = setInterval(gameLoop, 16); // 60fps
+    </script>
+  </body>
+</html>
