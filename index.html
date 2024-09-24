@@ -39,8 +39,13 @@
         background-color: #3e8e41;
       }
     </style>
+
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
   </head>
   <body>
+    <audio src="assets/sounds/confetti.mp3"></audio>
     <canvas id="gameCanvas" width="800" height="800"></canvas>
     <div id="lottery-numbers"></div>
     <button id="retry-button">Retry</button>
@@ -188,5 +193,7 @@ const retryButton = document.getElementById("retry-button");
       }
       let intervalId = setInterval(gameLoop, 16); // 60fps
     </script>
+
+<script src="assets/js/script.js"></script>
   </body>
 </html>
